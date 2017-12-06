@@ -29,12 +29,23 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+app.post("/urls/:id/update", (req, res) => {
+  let id = req.params.id;
+  // console.log(req.body);
+  let updatedLongURL = req.body.update;
+  urlDatabase[id] = updatedLongURL;
+  // console.log(urlDatabase);
+  res.redirect(`/urls/${id}`);
+  // res.send('Ok');
+});
+
 app.post("/urls", (req, res) => {
+  console.log(req.params);
   console.log(req.body);
   let longURL = req.body.longURL;
   let shortURL = generateRandomString(longURL);
   urlDatabase[shortURL] = longURL;
-  console.log(urlDatabase);
+  // console.log(urlDatabase);
   res.redirect(`/urls/${shortURL}`);
   // res.send('Ok');
 });

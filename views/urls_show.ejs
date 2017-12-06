@@ -8,9 +8,11 @@
 </title>
 <body>
 
-<h1> Set of URLS Variable is below. URLS SHOW</h1>
-
+<h1> Set of URLS Variable is below. URLS SHOW EJS</h1>
 <li> <%= shortURL %> - <%= longURL %> </li>
-
+  <form action="/urls/<%= shortURL%>/update" method="POST" style="margin:10px;">
+    <input id="update" type="text" name="update" placeholder="<%= longURL %>" style="width: 300px">
+    <input type="submit" value="Update">
+  </form>
 </body>
 </html>
