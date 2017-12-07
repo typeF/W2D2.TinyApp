@@ -11,9 +11,10 @@
 <form method="POST" action="/urls/<%= sites %>/delete" id="del">
 </form> <form method="GET" action="/urls/<%= sites %>/" id="update">
 </form>
-
 <li> <%= sites %> =======> <%= urls[sites] %><button form="update">EDIT</button><button form="del">DELETE</button> </li> </li>
+<td> Added: <%=stats[sites]["date"]%> </td> <td>Visitors: <%=stats[sites]["visits"]%></td> <td>Unique visitors: <%=stats[sites]["uniqueCount"]%></td>
 <%}%>
+
 <ul></ul>
 
 <a href="/urls/new"> Create a New Short Link </a>

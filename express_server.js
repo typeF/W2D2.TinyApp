@@ -31,13 +31,34 @@ function generateRandomString(){
   return Math.random().toString(16).slice(9);
 }
 
+// Determines if visitor is unique and logs it
+function uniques(array, currentUser, id){
+  let searchResult = array.find(user => user === currentUser);
+  if (searchResult === undefined){
+    urlStats[id]["uniqueCount"] += 1;
+    urlStats[id]["uniques"].push(currentUser);
+  }
+  return
+}
+
 let urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
 let urlStats = {
-  "users": ['a','b','c']
+  'b2xVn2': {
+    date: new Date().toString().substring(0,15),
+    visits: 0,
+    uniqueCount: 0,
+    uniques: []
+  },
+  '9sm5xK': {
+    date: new Date().toString().substring(0,15),
+    visits: 0,
+    uniqueCount: 0,
+    uniques: []
+}
 };
 
 // ################ GET RESPONSES ################
@@ -68,7 +89,7 @@ app.get("/login", (req, res) => {
 // Main page showing current list of urls with shortened & long urls
 app.get("/urls", (req, res) => {
   if (loginStatus(req)){
-    let templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+    let templateVars = { urls: urlDatabase, username: req.cookies["username"], stats: urlStats };
     res.render("urls_index", templateVars);
     // console.log(loginInfo(req));
     console.log(urlStats);
@@ -92,16 +113,22 @@ app.get("/urls/new", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL;
   let longURL = urlDatabase[shortURL]
-  // console.log(longURL);
   urlStats[shortURL]["visits"] += 1;
-  console.log(urlStats["users"]);
+  // console.log(urlStats["users"]);
   var currentUser = loginInfo(req);
-  let searchResult = urlStats[shortURL]["uniques"].find(user => user === currentUser);
-  if (searchResult === undefined){
-    urlStats[shortURL]["uniqueCount"] += 1;
-    urlStats[shortURL]["uniques"].push(currentUser);
+  let uniqueArr = urlStats[shortURL]["uniques"];
+  uniques(uniqueArr, currentUser, shortURL);
+  // let searchResult = urlStats[shortURL]["uniques"].find(user => user === currentUser);
+  // if (searchResult === undefined){
+  //   urlStats[shortURL]["uniqueCount"] += 1;
+  //   urlStats[shortURL]["uniques"].push(currentUser);
+  // }
+  console.log(longURL.substring(0,7));
+  if (longURL.substring(0,7) === 'http://'){
+    res.redirect(`${longURL}`);
+  } else {
+    res.redirect(`http://${longURL}`);
   }
-  res.redirect(`http://${longURL}`);
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -136,7 +163,8 @@ app.post("/urls", (req, res) => {
     let shortURL = generateRandomString(longURL);
     urlStats[shortURL] = {};
     urlDatabase[shortURL] = longURL;
-    urlStats[shortURL]["date"] = today;
+    // console.log(today);
+    urlStats[shortURL]["date"] = today.toString().substring(0,15);
     urlStats[shortURL]["visits"] = 0;
     urlStats[shortURL]["uniqueCount"] = 0;
     urlStats[shortURL]["uniques"] = [];
