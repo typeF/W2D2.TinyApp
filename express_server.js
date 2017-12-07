@@ -3,6 +3,8 @@ let app = express();
 const cookieParser = require('cookie-parser');
 const PORT = process.env.PORT || 8080;
 
+const bcrypt = require('bcrypt');
+
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -48,13 +50,15 @@ let urlDatabase = {
     date: new Date().toString().substring(0,15),
     visits: 0,
     uniqueCount: 0,
-    uniques: []},
+    uniques: []
+  },
   "9sm5xK": {
     url: "http://www.google.com",
     date: new Date().toString().substring(0,15),
     visits: 0,
     uniqueCount: 0,
-    uniques: []}
+    uniques: []
+  }
 };
 
 
@@ -77,21 +81,6 @@ function urlsForUser(id) {
   }
   return userDB;
 }
-
-let urlStats = {
-  'b2xVn2': {
-    date: new Date().toString().substring(0,15),
-    visits: 0,
-    uniqueCount: 0,
-    uniques: []
-  },
-  '9sm5xK': {
-    date: new Date().toString().substring(0,15),
-    visits: 0,
-    uniqueCount: 0,
-    uniques: []
-  }
-};
 
 const users = {
   "user1": {
@@ -211,6 +200,7 @@ app.post("/register", (req, res) => {
     console.log(req.body);
     let email = req.body.email;
     let password = req.body.password;
+    let passwordHashed = bcrypt.hashSync(password, 10);
 
     for (userID in users){
       if (users[userID]["email"] === email){
@@ -227,7 +217,7 @@ app.post("/register", (req, res) => {
     users[userID] = {};
     users[userID]["id"] = userID;
     users[userID]["email"] = email;
-    users[userID]["password"] = password;
+    users[userID]["password"] = passwordHashed;
 
 
     res.cookie("user_id", userID);
@@ -271,7 +261,7 @@ app.post("/login", (req, res) => {
   console.log(users);
   for (let userId in users){
     if (users[userId].email === email ){
-      if (users[userId].email === email && users[userId].password === password){
+      if (users[userId].email === email && bcrypt.compareSync(password,users[userId].password)) {
         res.cookie("user_id", userId);
         res.redirect('/');
         break;
