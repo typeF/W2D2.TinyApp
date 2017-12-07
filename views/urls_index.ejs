@@ -5,15 +5,18 @@
 </head>
 <body>
 
-<h1> Set of URLS Variable is below. URLS INDEX </h1>
+<h1> URLS INDEX </h1>
 <% for(sites in urls){ %>
 
 <form method="POST" action="/urls/<%= sites %>/delete" id="del">
+</form> <form method="GET" action="/urls/<%= sites %>/" id="update">
 </form>
 
-<li> <%= sites %> => <%= urls[sites] %><a href="/urls/<%= sites %>">Edit</a><button form="del">DELETE</button> </li>
+<li> <%= sites %> =======> <%= urls[sites] %><button form="update">EDIT</button><button form="del">DELETE</button> </li> </li>
 <%}%>
-<a href="/urls"> Dead Link for shortening URLS </a>
+<ul></ul>
+
+<a href="/urls/new"> Create a New Short Link </a>
 
 
 
