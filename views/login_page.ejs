@@ -3,7 +3,19 @@
 <head>
 <h1>
   Login Page
-  <% include ../views/partials/_header %>
+
+    <form action="/login" method="POST">
+    <p>
+      <label for="email"></label>
+      <input type="email" placeholder="EMAIL" name="email">
+     </p>
+    <p>
+      <label for="password"></label>
+      <input type="password" placeholder="PASSWORD" name="password">
+    </p>
+      <button type="submit">SUBMIT</button>
+  </form>
+
 </h1>
 
 </head>
@@ -12,5 +24,3 @@
 
 </body>
 </html>
-
-

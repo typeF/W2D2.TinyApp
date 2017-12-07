@@ -12,7 +12,7 @@
 </form> <form method="GET" action="/urls/<%= sites %>/" id="update">
 </form>
 <li> <%= sites %> =======> <%= urls[sites] %><button form="update">EDIT</button><button form="del">DELETE</button> </li> </li>
-<td> Added: <%=stats[sites]["date"]%> </td> <td>Visitors: <%=stats[sites]["visits"]%></td> <td>Unique visitors: <%=stats[sites]["uniqueCount"]%></td>
+<td> Added: <%=stats[sites]["date"]%> </td> <td>Hit Count: <%=stats[sites]["visits"]%></td> <td>Unique visitors: <%=stats[sites]["uniqueCount"]%></td>
 <%}%>
 
 <ul></ul>
