@@ -5,13 +5,18 @@
 </head>
 
 <body>
+  <% if (user_id === urls[shortURL].user) { %>
+    <h1> URLS Show EJS Page</h1>
+    <li> <%= shortURL %> - <%= longURL %> </li>
+    <form action="/urls/<%= shortURL%>/update" method="POST" style="margin:10px;">
+      <input id="update" type="text" name="update" placeholder="<%= longURL %>" style="width: 300px">
+      <input type="submit" value="Update">
+    </form>
+    <td> Added: <%=urls[shortURL]["date"]%> </td> <td>Visitors: <%=urls[shortURL]["visits"]%></td> <td>Unique visitors: <%=urls[shortURL]["uniqueCount"]%></td>
+  <% } else { %>
+  <p> Access only allowed for URL submitter. Please log in.</p>
+  <% } %>
 
-<h1> URLS Show EJS Page</h1>
-<li> <%= shortURL %> - <%= longURL %> </li>
-  <form action="/urls/<%= shortURL%>/update" method="POST" style="margin:10px;">
-    <input id="update" type="text" name="update" placeholder="<%= longURL %>" style="width: 300px">
-    <input type="submit" value="Update">
-  </form>
-<td> Added: <%=stats[shortURL]["date"]%> </td> <td>Visitors: <%=stats[shortURL]["visits"]%></td> <td>Unique visitors: <%=stats[shortURL]["uniqueCount"]%></td>
+
 </body>
 </html>

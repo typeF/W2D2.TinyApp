@@ -11,11 +11,7 @@ app.use(cookieParser());
 
 
 function loginInfo(req){
-//   if (req.cookies["username"]) {
-//     return req.cookies["username"];
-//   } else {
-//     return { "username": undefined };
-//   }
+
   if (req.cookies["user_id"]) {
     return req.cookies["user_id"];
   } else {
@@ -40,24 +36,46 @@ function generateRandomString(){
 function uniques(array, currentUser, id){
   let searchResult = array.find(user => user === currentUser);
   if (searchResult === undefined){
-    urlStats[id]["uniqueCount"] += 1;
-    urlStats[id]["uniques"].push(currentUser);
+    urlDatabase[id]["uniqueCount"] += 1;
+    urlDatabase[id]["uniques"].push(currentUser);
   }
   return
 }
 
 let urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    url: "http://www.lighthouselabs.ca",
+    date: new Date().toString().substring(0,15),
+    visits: 0,
+    uniqueCount: 0,
+    uniques: []},
+  "9sm5xK": {
+    url: "http://www.google.com",
+    date: new Date().toString().substring(0,15),
+    visits: 0,
+    uniqueCount: 0,
+    uniques: []}
 };
 
 
-function statInitializer(shortURL){
-  urlStats[shortURL]["date"] = new Date().toString().substring(0,15);
-  urlStats[shortURL]["visits"] = 0;
-  urlStats[shortURL]["uniqueCount"] = 0;
-  urlStats[shortURL]["uniques"] = [];
+function statInitializer(shortURL, user){
+  urlDatabase[shortURL]["date"] = new Date().toString().substring(0,15);
+  urlDatabase[shortURL]["visits"] = 0;
+  urlDatabase[shortURL]["uniqueCount"] = 0;
+  urlDatabase[shortURL]["uniques"] = [];
+  urlDatabase[shortURL]["user"] = user;
   return
+}
+
+function urlsForUser(id) {
+  let userDB = {};
+  for (urls in urlDatabase) {
+    if (urlDatabase[urls].user === id){
+      userDB[urls] = {};
+      userDB[urls] = urlDatabase[urls];
+    }
+  }
+  return userDB;
 }
 
 let urlStats = {
@@ -122,8 +140,11 @@ app.get("/urls", (req, res) => {
   if (loginStatus(req)){
     let user = loginInfo(req);
     let status = loginStatus(req);
-    console.log(user);
-    let templateVars = { urls: urlDatabase, users: users, stats: urlStats, user_id: user };
+    // console.log(user);
+    // console.log(urlDatabase);
+    let userDB = urlsForUser(user);
+    console.log(userDB);
+    let templateVars = { urls: userDB, users: users, user_id: user };
     res.render("urls_index", templateVars);
     // console.log(urlStats);
   } else {
@@ -145,11 +166,11 @@ app.get("/urls/new", (req, res) => {
 // Directs to longURL (with error handling) & logs visit stats
 app.get("/u/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL;
-  let longURL = urlDatabase[shortURL]
+  let longURL = urlDatabase[shortURL].url;
   var currentUser = loginInfo(req);
-  let uniqueArr = urlStats[shortURL]["uniques"];
+  let uniqueArr = urlDatabase[shortURL]["uniques"];
   // Logs unique visitors and # visits
-  urlStats[shortURL]["visits"] += 1;
+  urlDatabase[shortURL]["visits"] += 1;
   uniques(uniqueArr, currentUser, shortURL);
 
   if (longURL.substring(0,7) === 'http://'){
@@ -171,8 +192,8 @@ app.get("/urls/:id", (req, res) => {
     console.log(user);
 
     let shortURL = req.params.id;
-    let longURL = urlDatabase[shortURL];
-    let templateVars = { shortURL: shortURL, longURL: longURL, users: users, stats: urlStats, user_id: user };
+    let longURL = urlDatabase[shortURL].url;
+    let templateVars = { shortURL: shortURL, longURL: longURL, users: users, user_id: user, urls: urlDatabase };
     res.render("urls_show", templateVars);
   } else {
     res.render("not_logged_in");
@@ -226,12 +247,12 @@ app.post("/urls/:id/update", (req, res) => {
 
 // Generates a new short url and adds to database
 app.post("/urls", (req, res) => {
-    let today = new Date();
     let longURL = req.body.longURL;
     let shortURL = generateRandomString(longURL);
-    urlStats[shortURL] = {};
-    urlDatabase[shortURL] = longURL;
-    statInitializer(shortURL);
+    let user = req.cookies["user_id"];
+    urlDatabase[shortURL] = {};
+    urlDatabase[shortURL]["url"] = longURL;
+    statInitializer(shortURL,user);
     res.redirect(`/urls/${shortURL}`);
 });
 
