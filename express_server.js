@@ -47,6 +47,14 @@ function uniques(array, currentUser, id){
   return
 }
 
+function statLog(urlID, user) {
+  let date = new Date().toString().substring(0,15);
+  let randomID = generateRandomString();
+  urlID.visitTag.push(`${date} - User ${randomID}`);
+}
+
+// urlDatabase[shortURL];
+
 let urlDatabase = {
   "b2xVn2": {
     url: "http://www.lighthouselabs.ca",
@@ -65,6 +73,7 @@ let urlDatabase = {
 };
 
 function statInitializer(shortURL, longURL, user){
+  day = new Date().toString().substring(0,15);
   urlDatabase[shortURL] =
     {
       date: new Date().toString().substring(0,15),
@@ -72,25 +81,11 @@ function statInitializer(shortURL, longURL, user){
       uniqueCount: 0,
       uniques: [],
       user: user,
-      url: longURL
+      url: longURL,
+      visitTag:[]
     };
-  // urlDatabase[shortURL]["date"] = new Date().toString().substring(0,15);
-  // urlDatabase[shortURL]["visits"] = 0;
-  // urlDatabase[shortURL]["uniqueCount"] = 0;
-  // urlDatabase[shortURL]["uniques"] = [];
-  // urlDatabase[shortURL]["user"] = user;
   return
 }
-
-
-// function statInitializer(shortURL, user){
-//   urlDatabase[shortURL]["date"] = new Date().toString().substring(0,15);
-//   urlDatabase[shortURL]["visits"] = 0;
-//   urlDatabase[shortURL]["uniqueCount"] = 0;
-//   urlDatabase[shortURL]["uniques"] = [];
-//   urlDatabase[shortURL]["user"] = user;
-//   return
-// }
 
 function urlsForUser(id) {
   let userDB = {};
@@ -116,12 +111,6 @@ const users = {};
 //   }
 // }
 
-//Populates stats for example sites. Can be removed if examples are removed.
-// var be = 'b2xVn2'
-// statInitializer('b2xVn2');
-// statInitializer('9sm5xK');
-
-// ################ GET RESPONSES ################
 
 // ROOT page, checks login status
 app.get("/", (req, res) => {
@@ -176,14 +165,16 @@ app.get("/urls/new", (req, res) => {
 // Directs to longURL (with error handling) & logs visit stats
 app.get("/u/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL;
-  if (!urlDatabase[shortURL]) {
+  let urlID = urlDatabase[shortURL];
+  if (!urlID) {
     res.status(400).send('400 - Link not found.');
   }
-  let longURL = urlDatabase[shortURL].url;
+  let longURL = urlID.url;
   var currentUser = loginInfo(req);
-  let uniqueArr = urlDatabase[shortURL]["uniques"];
+  let uniqueArr = urlID.uniques;
   // Logs unique visitors and # visits
-  urlDatabase[shortURL]["visits"] += 1;
+  urlID.visits += 1;
+  statLog(urlID, currentUser);
   uniques(uniqueArr, currentUser, shortURL);
 
   if (longURL.substring(0,7) === 'http://'){

@@ -14,7 +14,11 @@
     </form>
     <button form="update">EDIT</button> <button form="del">DELETE</button> </li>
 
-    <p><td> Added: <%=urls[sites]["date"]%> </td> <td>Hit Count: <%=urls[sites]["visits"]%></td> <td>Unique visitors: <%=urls[sites]["uniqueCount"]%></td></p>
+    <p><td> Added: <%=urls[sites]["date"]%> </td> <td>Hit Count: <%=urls[sites]["visits"]%></td> <td>Unique visitors: <%=urls[sites]["uniqueCount"]%></td>
+
+      <% urls[sites].visitTag.forEach(stat => { %>
+      <li>Viewed on:  <%= stat %></li>
+<%    }); %>
 
 <% } %>
 
