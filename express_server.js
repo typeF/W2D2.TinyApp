@@ -1,5 +1,6 @@
 let express = require('express');
 let app = express();
+const methodOverride = require('method-override');
 const cookieSession = require('cookie-session');
 const PORT = process.env.PORT || 8080;
 
@@ -10,6 +11,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 app.set("view engine", "ejs");
 // app.use(cookieParser());
+
+app.use(methodOverride('_method'));
 
 app.use(cookieSession({
   name: 'session',
@@ -50,7 +53,7 @@ function uniques(array, currentUser, id){
 function statLog(urlID, user) {
   let date = new Date().toString().substring(0,15);
   let randomID = generateRandomString();
-  urlID.visitTag.push(`${date} - User ${randomID}`);
+  urlID.visitTag.push(`${date} - Visitor# ${randomID}`);
 }
 
 // urlDatabase[shortURL];
@@ -167,7 +170,7 @@ app.get("/u/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL;
   let urlID = urlDatabase[shortURL];
   if (!urlID) {
-    res.status(400).send('400 - Link not found.');
+    res.status(404).send('404 - Link not found.');
   }
   let longURL = urlID.url;
   var currentUser = loginInfo(req);
@@ -192,7 +195,7 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   let shortURL = req.params.id;
   if (!urlDatabase[shortURL]) {
-    res.status(400).send('400 - Link not found.');
+    res.status(404).send('404 - Link not found.');
   }
   let longURL = urlDatabase[shortURL].url;
 
@@ -255,7 +258,7 @@ app.post("/register", (req, res) => {
 });
 
 // Updates with new long url provided
-app.post("/urls/:id/update", (req, res) => {
+app.put("/urls/:id/update", (req, res) => {
   let id = req.params.id;
   let updatedLongURL = req.body.update;
   urlDatabase[id].url = updatedLongURL;
@@ -278,7 +281,7 @@ app.post("/urls", (req, res) => {
 });
 
 // Deletes entry from database
-app.post("/urls/:id/delete", (req, res) => {
+app.delete("/urls/:id/delete", (req, res) => {
   let id = req.params.id;
   delete urlDatabase[id];
   res.redirect("/urls");

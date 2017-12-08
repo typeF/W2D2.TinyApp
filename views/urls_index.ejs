@@ -9,16 +9,13 @@
 <% for(sites in urls){ %>
 <li> <%= sites %> =======> <%= urls[sites].url %>
 
-    <form method="POST" action="/urls/<%= sites %>/delete" id="del">
+    <form method="POST" action="/urls/<%= sites %>/delete?_method=DELETE" id="del">
     </form> <form method="GET" action="/urls/<%= sites %>/" id="update">
     </form>
     <button form="update">EDIT</button> <button form="del">DELETE</button> </li>
 
     <p><td> Added: <%=urls[sites]["date"]%> </td> <td>Hit Count: <%=urls[sites]["visits"]%></td> <td>Unique visitors: <%=urls[sites]["uniqueCount"]%></td>
 
-      <% urls[sites].visitTag.forEach(stat => { %>
-      <li>Viewed on:  <%= stat %></li>
-<%    }); %>
 
 <% } %>
 

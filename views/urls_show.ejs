@@ -8,7 +8,7 @@
   <% if (user_id === urls[shortURL].user) { %>
     <h1> URLS Show EJS Page</h1>
     <ul> <%= shortURL %> - <%= longURL %> </ul>
-    <form action="/urls/<%= shortURL%>/update" method="POST" style="margin:10px;">
+    <form action="/urls/<%= shortURL%>/update?_method=PUT" method="POST" style="margin:10px;">
       <input id="update" type="text" name="update" placeholder="<%= longURL %>" style="width: 300px">
       <input type="submit" value="Update">
     </form>
@@ -17,7 +17,7 @@
 
     <ul></ul>
 
-    <% urls[sites].visitTag.forEach(stat => { %>
+    <% urls[shortURL].visitTag.forEach(stat => { %>
       <li>Viewed on:  <%= stat %></li>
     <% }); %>
 
