@@ -1,8 +1,13 @@
 <!-- views/partials/_header.ejs -->
 <title> TinyApp </title>
 <% if (user_id) { %>
-  <h1> User_ID: <%= user_id %>
+  <h3> User_ID: <%= users[user_id].email %>
     <form action="/logout" method="POST" id="logout"> </form>
     <button type="submit" form="logout"> LOGOUT </button>
- </h1>
- <% } %>
+ </h3>
+ <% } else { %>
+    <form action="/register" method="GET" id="register"> </form>
+    <button type="submit" form="register"> REGISTER </button>
+    <form action="/login" method="GET" id="login"> </form>
+    <button type="submit" form="login"> Log In </button>
+<% } %>

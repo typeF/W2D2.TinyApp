@@ -20,7 +20,7 @@ function loginInfo(req){
   if (req.session.userID) {
     return req.session.userID;
   } else {
-    return { "user_id": undefined };
+    return { "user_id": false };
   }
 }
 
@@ -64,15 +64,33 @@ let urlDatabase = {
   }
 };
 
-
-function statInitializer(shortURL, user){
-  urlDatabase[shortURL]["date"] = new Date().toString().substring(0,15);
-  urlDatabase[shortURL]["visits"] = 0;
-  urlDatabase[shortURL]["uniqueCount"] = 0;
-  urlDatabase[shortURL]["uniques"] = [];
-  urlDatabase[shortURL]["user"] = user;
+function statInitializer(shortURL, longURL, user){
+  urlDatabase[shortURL] =
+    {
+      date: new Date().toString().substring(0,15),
+      visits: 0,
+      uniqueCount: 0,
+      uniques: [],
+      user: user,
+      url: longURL
+    };
+  // urlDatabase[shortURL]["date"] = new Date().toString().substring(0,15);
+  // urlDatabase[shortURL]["visits"] = 0;
+  // urlDatabase[shortURL]["uniqueCount"] = 0;
+  // urlDatabase[shortURL]["uniques"] = [];
+  // urlDatabase[shortURL]["user"] = user;
   return
 }
+
+
+// function statInitializer(shortURL, user){
+//   urlDatabase[shortURL]["date"] = new Date().toString().substring(0,15);
+//   urlDatabase[shortURL]["visits"] = 0;
+//   urlDatabase[shortURL]["uniqueCount"] = 0;
+//   urlDatabase[shortURL]["uniques"] = [];
+//   urlDatabase[shortURL]["user"] = user;
+//   return
+// }
 
 function urlsForUser(id) {
   let userDB = {};
@@ -85,18 +103,18 @@ function urlsForUser(id) {
   return userDB;
 }
 
-const users = {
-  "user1": {
-    id: "1",
-    email: "1@example.com",
-    password: "one"
-  },
- "user2": {
-    id: "2",
-    email: "2@example.com",
-    password: "two"
-  }
-}
+const users = {};
+//   "user1": {
+//     id: "1",
+//     email: "1@example.com",
+//     password: "one"
+//   },
+//  "user2": {
+//     id: "2",
+//     email: "2@example.com",
+//     password: "two"
+//   }
+// }
 
 //Populates stats for example sites. Can be removed if examples are removed.
 // var be = 'b2xVn2'
@@ -118,13 +136,10 @@ app.get("/", (req, res) => {
 
 // Generates page for logging in. Redirects to /urls if already loggged in
 app.get("/login", (req, res) => {
-  // if (loginStatus(req)){
-  //   res.redirect("/urls");
-  // } else {
-  //   let templateVars = users;
+   if (loginStatus(req)){
+      res.redirect('/urls');
+    }
     res.render("login_page");
-  // }
-
 });
 
 // Main page listing URL database
@@ -132,15 +147,18 @@ app.get("/urls", (req, res) => {
   if (loginStatus(req)){
     let user = loginInfo(req);
     let status = loginStatus(req);
-    // console.log(user);
-    // console.log(urlDatabase);
+    console.log(users);
+    console.log(urlDatabase);
     let userDB = urlsForUser(user);
-    console.log(userDB);
+    // console.log(userDB);
     let templateVars = { urls: userDB, users: users, user_id: user };
     res.render("urls_index", templateVars);
     // console.log(urlStats);
   } else {
-  res.render("not_logged_in");
+    // let user = loginInfo(req);
+    // console.log(user);
+    let templateVars = { user_id: undefined };
+    res.render("not_logged_in", templateVars);
   }
 });
 
@@ -148,7 +166,7 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   if (loginStatus(req)){
     let user = loginInfo(req);
-    let templateVars = {user_id: user};
+    let templateVars = {users: users, user_id: user};
     res.render("urls_new", templateVars);
   } else {
     res.redirect("/login");
@@ -158,6 +176,9 @@ app.get("/urls/new", (req, res) => {
 // Directs to longURL (with error handling) & logs visit stats
 app.get("/u/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL;
+  if (!urlDatabase[shortURL]) {
+    res.status(400).send('400 - Link not found.');
+  }
   let longURL = urlDatabase[shortURL].url;
   var currentUser = loginInfo(req);
   let uniqueArr = urlDatabase[shortURL]["uniques"];
@@ -178,22 +199,33 @@ app.get("/u/:shortURL", (req, res) => {
 
 // Update form for individual URL
 app.get("/urls/:id", (req, res) => {
-  if (loginStatus(req)){
-    console.log(loginInfo(req));
-    user = loginInfo(req);
-    console.log(user);
+  let shortURL = req.params.id;
+  if (!urlDatabase[shortURL]) {
+    res.status(400).send('400 - Link not found.');
+  }
+  let longURL = urlDatabase[shortURL].url;
 
-    let shortURL = req.params.id;
-    let longURL = urlDatabase[shortURL].url;
+  if (loginStatus(req)){
+    // console.log(loginInfo(req));
+    user = loginInfo(req);
+    // console.log(user);
+
+    // console.log(urlDatabase);
+    // console.log(urlDatabase[shortURL].user);
+    console.log(users);
     let templateVars = { shortURL: shortURL, longURL: longURL, users: users, user_id: user, urls: urlDatabase };
     res.render("urls_show", templateVars);
   } else {
-    res.render("not_logged_in");
+    let templateVars = { user_id: undefined };
+    res.render("not_logged_in", templateVars);
   }
 });
 
 // Registers a user
 app.get("/register", (req, res) => {
+    if (loginStatus(req)){
+      res.redirect('/urls');
+    }
     res.render('registration');
 });
 
@@ -235,7 +267,7 @@ app.post("/register", (req, res) => {
 app.post("/urls/:id/update", (req, res) => {
   let id = req.params.id;
   let updatedLongURL = req.body.update;
-  urlDatabase[id] = updatedLongURL;
+  urlDatabase[id].url = updatedLongURL;
   res.redirect(`/urls/${id}`);
 });
 
@@ -245,8 +277,12 @@ app.post("/urls", (req, res) => {
     let shortURL = generateRandomString(longURL);
     let user = req.session.userID;
     urlDatabase[shortURL] = {};
-    urlDatabase[shortURL]["url"] = longURL;
-    statInitializer(shortURL,user);
+    urlDatabase[shortURL].url = longURL;
+    console.log(urlDatabase);
+
+    statInitializer(shortURL, longURL, user);
+    console.log(urlDatabase);
+
     res.redirect(`/urls/${shortURL}`);
 });
 
@@ -273,7 +309,7 @@ app.post("/login", (req, res) => {
     // } else {
     }
   }
-      res.status(403).send('Invalid EMAIL or PASSWORD');
+  res.status(403).send('Invalid EMAIL or PASSWORD');
 
   // let userLogin = req.body.username;
   // res.cookie("username", userLogin);
