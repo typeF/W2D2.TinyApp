@@ -1,10 +1,10 @@
-let express = require('express');
+const express = require('express');
 const methodOverride = require('method-override');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
 
-let app = express();
+const app = express();
 const PORT = process.env.PORT || 8080;
 
 app.set("view engine", "ejs");
@@ -13,19 +13,24 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(methodOverride('_method'));
 app.use(cookieSession({
   name: 'session',
-  keys: ['key1']
+  keys: ['super top secret key']
 }));
 
-app.use(function loginInfo(req, res, next) {
-  res.locals.user = req.session.userID;
-  req.user = req.session.userID;
-  req.isLoggedIn = !!res.locals.user;
-  res.locals.urls = urlDatabase;
-  // if (!!res.locals.user){
-    res.locals.users = users;
-  // }
+app.use(function clearGarbageCookies(req, res, next) {
+  if (!users[req.session.userID]) {
+    req.session.userID = undefined;
+  }
   next();
 });
+
+app.use(function loginInfo(req, res, next) {
+  res.locals.user = users[req.session.userID];
+  res.locals.urls = urlDatabase;
+  req.isLoggedIn = !!res.locals.user;
+  next();
+});
+
+const users = {};
 
 const urlDatabase = {
   "b2xVn2": {
@@ -33,7 +38,7 @@ const urlDatabase = {
     date: new Date().toString().substring(0,15),
     visits: 0,
     uniqueCount: 0,
-    uniques: [],
+    uniques: {},
     visitTag: []
   },
   "9sm5xK": {
@@ -41,47 +46,37 @@ const urlDatabase = {
     date: new Date().toString().substring(0,15),
     visits: 0,
     uniqueCount: 0,
-    uniques: [],
+    uniques: {},
     visitTag: []
   }
 };
 
-const users = {};
-
-// Determines if visitor is unique and logs it
-function uniques(shortURL, currentUser) {
-  let urlID = urlDatabase[shortURL];
-  let array = urlID.uniques;
-  let searchResult = array.find(user => user === currentUser);
-  if (searchResult === undefined){
-    urlID.uniqueCount += 1;
-    urlID.uniques.push(currentUser);
-  }
-  return
-}
-
-function statLog(shortURL) {
-  let urlID = urlDatabase[shortURL];
-  // var currentUser = req.session.userID
-  urlID.visits += 1;
-  let date = new Date().toString().substring(0,15);
-  let randomID = generateRandomString();
-  urlID.visitTag.push(`${date} - Visitor# ${randomID}`);
-}
-
 function statInitializer(shortURL, longURL, user){
-  day = new Date().toString().substring(0,15);
-  urlDatabase[shortURL] =
-    {
-      date: new Date().toString().substring(0,15),
-      visits: 0,
-      uniqueCount: 0,
-      uniques: [],
-      user: user,
-      url: longURL,
-      visitTag:[]
-    };
-  return
+  urlDatabase[shortURL] = {
+    date: new Date().toString().substring(0,15),
+    visits: 0,
+    uniqueCount: 0,
+    uniques: {},
+    user: user,
+    url: longURL,
+    visitTag:[]
+  };
+}
+
+function uniqueVistorLogger(shortURL, trackerID) {
+  let url = urlDatabase[shortURL];
+  let uniquesDB = url.uniques;
+  if (!uniquesDB[trackerID]){
+    url.uniqueCount += 1;
+    uniquesDB[trackerID] = true;
+  }
+}
+
+function statLogger(shortURL, trackerID) {
+  let url = urlDatabase[shortURL];
+  let date = new Date().toString().substring(0,15);
+  url.visits += 1;
+  url.visitTag.push(`${date} - Visited by: ${trackerID}`);
 }
 
 function generateRandomString(){
@@ -89,10 +84,10 @@ function generateRandomString(){
 }
 
 // Creates customized user-specific URL database
-function urlsForUser(id) {
-  let userDB = {};
+function urlsForUser(userID) {
+  const userDB = {};
   for (urls in urlDatabase) {
-    if (urlDatabase[urls].user === id){
+    if (urlDatabase[urls].user === userID){
       userDB[urls] = urlDatabase[urls];
     }
   }
@@ -161,23 +156,32 @@ app.get("/u/:shortURL", (req, res) => {
     res.status(404).send('404 - Link not found.');
     return;
   }
-  let currentUser = req.session.userID;
+  // Generates tracker cookie if user doesn't have one
+  if (!req.session.Track) {
+    req.session.Track = generateRandomString();
+  }
   // Logs unique visitors and # visits
-  statLog(shortURL);
-  uniques(shortURL, currentUser);
+  let trackerID = req.session.Track;
+  statLogger(shortURL, trackerID);
+  uniqueVistorLogger(shortURL, trackerID);
   res.redirect(URLHandling(longURL));
 });
 
-// Update form for individual URL
+// Usage statistics and update form for URL
 app.get("/urls/:id", (req, res) => {
   let shortURL = req.params.id;
   if (!urlDatabase[shortURL]) {
     res.status(404).send('404 - Link not found.');
-    return;
+    return
   }
   if (req.isLoggedIn){
-    let templateVars = { shortURL: shortURL };
-    res.render("urls_show", templateVars);
+    if (urlDatabase[req.params.id].user === req.session.userID){
+      let templateVars = { shortURL: shortURL };
+      res.render("urls_show", templateVars);
+    } else {
+      res.status(404).send('401 - Administrator Access only.');
+      return
+    }
   } else {
     res.render("not_logged_in");
   }
@@ -197,28 +201,24 @@ app.post("/register", (req, res) => {
     let email = req.body.email;
     let password = req.body.password;
     let passwordHashed = bcrypt.hashSync(password, 10);
-
     for (userID in users){
       if (users[userID]["email"] === email){
       res.status(400).send('Email already exists. Please enter new email');
       return
       }
     }
-
     if (email === "" || password === ""){
       res.status(400).send('E-mail and password fields cannot be empty');
       return
     } else {
-
     let userID = generateRandomString();
     req.session.userID = userID;
-
     users[userID] =
       {
+        user: userID,
         email: email,
         password: passwordHashed
       };
-
     res.redirect('/urls');
     }
 });
@@ -226,15 +226,14 @@ app.post("/register", (req, res) => {
 // Updates with new long url provided
 app.put("/urls/:id/update", (req, res) => {
   if (urlDatabase[req.params.id].user === req.session.userID){
-    let id = req.params.id;
+    let shortURL = req.params.id;
     let updatedLongURL = req.body.update;
-    urlDatabase[id].url = updatedLongURL;
+    urlDatabase[shortURL].url = updatedLongURL;
     res.redirect(`/urls/${id}`);
   } else {
-    res.status(400).send('400 - Only the administrator can edit this page');
+    res.status(400).send('401 - Only the administrator can edit this page.');
     return
   }
-
 });
 
 // Generates a new short url and adds to database
@@ -242,17 +241,20 @@ app.post("/urls", (req, res) => {
   let longURL = req.body.longURL;
   let shortURL = generateRandomString(longURL);
   let user = req.session.userID;
-  urlDatabase[shortURL] = {};
-  urlDatabase[shortURL].url = longURL;
   statInitializer(shortURL, longURL, user);
   res.redirect(`/urls/${shortURL}`);
 });
 
 // Deletes entry from database
 app.delete("/urls/:id/delete", (req, res) => {
-  let id = req.params.id;
-  delete urlDatabase[id];
-  res.redirect("/urls");
+  if (urlDatabase[req.params.id].user === req.session.userID){
+    let shortURL = req.params.id;
+    delete urlDatabase[shortURL];
+    res.redirect("/urls");
+  } else {
+    res.status(400).send('401 - Administrator function only.');
+    return
+  }
 });
 
 // Generates login cookie

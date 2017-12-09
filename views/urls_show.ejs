@@ -5,26 +5,19 @@
 </head>
 
 <body>
-  <% if (user === urls[shortURL].user) { %>
-    <h1> URLS Show EJS Page</h1>
-    <ul> <%= shortURL %> - <%= urls[shortURL].url %> </ul>
+    <h2> Usage Statistics</h2>
+    <ul> <a href="/u/<%=shortURL %>"> <%= shortURL %></a> - <%= urls[shortURL].url %> </ul>
     <form action="/urls/<%= shortURL%>/update?_method=PUT" method="POST" style="margin:10px;">
       <input id="update" type="text" name="update" placeholder="<%= urls[shortURL].url %>" style="width: 300px">
       <input type="submit" value="Update">
     </form>
     <ul></ul>
-    <td> Added: <%=urls[shortURL]["date"]%> </td> <td>Visitors: <%=urls[shortURL]["visits"]%></td> <td>Unique visitors: <%=urls[shortURL]["uniqueCount"]%></td>
+    <td> Added: <%=urls[shortURL]["date"]%> • </td> <td>Views: <%=urls[shortURL]["visits"]%> • </td> <td>Unique visitors: <%=urls[shortURL]["uniqueCount"]%></td>
 
     <ul></ul>
 
     <% urls[shortURL].visitTag.forEach(stat => { %>
       <li>Viewed on:  <%= stat %></li>
     <% }); %>
-
-  <% } else { %>
-  <p> Access only allowed for URL Admin.</p>
-  <% } %>
-
-
 </body>
 </html>

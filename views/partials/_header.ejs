@@ -1,7 +1,7 @@
 <!-- views/partials/_header.ejs -->
 <title> TinyApp </title>
 <% if (user) { %>
-  <h3> User: <%= users[user].email %>
+  <h3> User: <%= user.email %>
     <form action="/logout" method="POST" id="logout"> </form>
     <button type="submit" form="logout"> LOGOUT </button>
  </h3>
