@@ -18,6 +18,7 @@ app.use(cookieSession({
 
 app.use(function loginInfo(req, res, next) {
   res.locals.user = req.session.userID;
+  req.user = req.session.userID;
   req.isLoggedIn = !!res.locals.user;
   res.locals.urls = urlDatabase;
   // if (!!res.locals.user){
@@ -162,7 +163,6 @@ app.get("/u/:shortURL", (req, res) => {
   }
   let currentUser = req.session.userID;
   // Logs unique visitors and # visits
-  console.log(longURL);
   statLog(shortURL);
   uniques(shortURL, currentUser);
   res.redirect(URLHandling(longURL));
@@ -194,7 +194,6 @@ app.get("/register", (req, res) => {
 // ################ POST RESPONSES ################
 
 app.post("/register", (req, res) => {
-    console.log(req.body);
     let email = req.body.email;
     let password = req.body.password;
     let passwordHashed = bcrypt.hashSync(password, 10);
@@ -202,13 +201,13 @@ app.post("/register", (req, res) => {
     for (userID in users){
       if (users[userID]["email"] === email){
       res.status(400).send('Email already exists. Please enter new email');
-      return;
+      return
       }
     }
 
     if (email === "" || password === ""){
       res.status(400).send('E-mail and password fields cannot be empty');
-      return;
+      return
     } else {
 
     let userID = generateRandomString();
@@ -220,17 +219,22 @@ app.post("/register", (req, res) => {
         password: passwordHashed
       };
 
-    console.log(users);
     res.redirect('/urls');
     }
 });
 
 // Updates with new long url provided
 app.put("/urls/:id/update", (req, res) => {
-  let id = req.params.id;
-  let updatedLongURL = req.body.update;
-  urlDatabase[id].url = updatedLongURL;
-  res.redirect(`/urls/${id}`);
+  if (urlDatabase[req.params.id].user === req.session.userID){
+    let id = req.params.id;
+    let updatedLongURL = req.body.update;
+    urlDatabase[id].url = updatedLongURL;
+    res.redirect(`/urls/${id}`);
+  } else {
+    res.status(400).send('400 - Only the administrator can edit this page');
+    return
+  }
+
 });
 
 // Generates a new short url and adds to database
@@ -240,9 +244,7 @@ app.post("/urls", (req, res) => {
   let user = req.session.userID;
   urlDatabase[shortURL] = {};
   urlDatabase[shortURL].url = longURL;
-  // console.log(urlDatabase);
   statInitializer(shortURL, longURL, user);
-  // console.log(urlDatabase);
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -257,8 +259,6 @@ app.delete("/urls/:id/delete", (req, res) => {
 app.post("/login", (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
-  // console.log(req.body.email);
-  // console.log(users);
   for (let userId in users){
     if (users[userId].email === email ){
       if (users[userId].email === email && bcrypt.compareSync(password,users[userId].password)) {
