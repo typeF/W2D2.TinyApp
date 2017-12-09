@@ -12,6 +12,8 @@ Analytics:
 
 ## Final Product
 
+!["Screenshot of URLS page](https://github.com/typeF/W2D2.TinyApp/blob/master/docs/URL_Index_Page.png?raw=true)
+!["Screenshot of Update/Stats Page](https://github.com/typeF/W2D2.TinyApp/blob/master/docs/URL_Update_Stat_Page.png?raw=true)
 
 ## Dependencies
 
