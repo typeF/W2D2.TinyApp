@@ -1,15 +1,27 @@
 <!DOCTYPE html>
 <html lang='en'>
-<head>
-  <% include ../views/partials/_header %>
-</head>
-<h1>
-  Not logged in. <a href="/login">Please log in </a>or<a href="/register"> Register</a>
-</h1>
+  <head>
+  <meta charset="utf-8">
+  <title>TinyApp</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <style>
+    body {
+      padding-top: 20px;
+      padding-bottom: 20px;
+    }
+
+    .jumbotron {
+      margin-top: 10px;
+    }
+  </style>
+  </head>
+
 <body>
-
-
+  <div class="container">
+    <% include ../views/partials/_header %>
+    <div class="jumbotron">
+    <h1>Not logged in.</h1>
+    <h1>Plase log in or register for access. </h1>
+  </div>
 </body>
 </html>
-
-

@@ -3,7 +3,6 @@ const methodOverride = require('method-override');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
-
 const app = express();
 const PORT = process.env.PORT || 8080;
 
@@ -63,6 +62,13 @@ function statInitializer(shortURL, longURL, user){
   };
 }
 
+function statLogger(shortURL, trackerID) {
+  let url = urlDatabase[shortURL];
+  let date = new Date().toString().substring(0,15);
+  url.visits += 1;
+  url.visitTag.push(`${date} - Visited by: ${trackerID}`);
+}
+
 function uniqueVistorLogger(shortURL, trackerID) {
   let url = urlDatabase[shortURL];
   let uniquesDB = url.uniques;
@@ -70,13 +76,6 @@ function uniqueVistorLogger(shortURL, trackerID) {
     url.uniqueCount += 1;
     uniquesDB[trackerID] = true;
   }
-}
-
-function statLogger(shortURL, trackerID) {
-  let url = urlDatabase[shortURL];
-  let date = new Date().toString().substring(0,15);
-  url.visits += 1;
-  url.visitTag.push(`${date} - Visited by: ${trackerID}`);
 }
 
 function generateRandomString(){
@@ -106,9 +105,9 @@ function URLHandling (longURL){
   }
 }
 
-// ################ GET RESPONSES ################
+// ################ GET RESPONSES #####################################################################
 
-// ROOT page, checks login status
+// ROOT page
 app.get("/", (req, res) => {
   if (req.isLoggedIn) {
     res.redirect('/urls');
@@ -119,7 +118,7 @@ app.get("/", (req, res) => {
   }
 });
 
-// Generates page for logging in. Redirects to /urls if already loggged in
+// Login Page
 app.get("/login", (req, res) => {
    if (req.isLoggedIn){
       res.redirect('/urls');
@@ -139,7 +138,7 @@ app.get("/urls", (req, res) => {
   }
 });
 
-// Page for submitting URLS to shorten
+// Create new short URL
 app.get("/urls/new", (req, res) => {
   if (req.isLoggedIn){
     res.render("urls_new");
@@ -167,7 +166,7 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(URLHandling(longURL));
 });
 
-// Usage statistics and update form for URL
+// Update and Usage Stats for URL
 app.get("/urls/:id", (req, res) => {
   let shortURL = req.params.id;
   if (!urlDatabase[shortURL]) {
@@ -191,11 +190,12 @@ app.get("/urls/:id", (req, res) => {
 app.get("/register", (req, res) => {
     if (req.isLoggedIn){
       res.redirect('/urls');
+      return
     }
     res.render('registration');
 });
 
-// ################ POST RESPONSES ################
+// ################ POST RESPONSES #####################################################
 
 app.post("/register", (req, res) => {
     let email = req.body.email;
@@ -223,26 +223,26 @@ app.post("/register", (req, res) => {
     }
 });
 
-// Updates with new long url provided
-app.put("/urls/:id/update", (req, res) => {
-  if (urlDatabase[req.params.id].user === req.session.userID){
-    let shortURL = req.params.id;
-    let updatedLongURL = req.body.update;
-    urlDatabase[shortURL].url = updatedLongURL;
-    res.redirect(`/urls/${id}`);
-  } else {
-    res.status(400).send('401 - Only the administrator can edit this page.');
-    return
-  }
-});
-
-// Generates a new short url and adds to database
+// Creates new short url and adds to database
 app.post("/urls", (req, res) => {
   let longURL = req.body.longURL;
   let shortURL = generateRandomString(longURL);
   let user = req.session.userID;
   statInitializer(shortURL, longURL, user);
   res.redirect(`/urls/${shortURL}`);
+});
+
+// Updates with new long url provided
+app.put("/urls/:id/update", (req, res) => {
+  if (urlDatabase[req.params.id].user === req.session.userID){
+    let shortURL = req.params.id;
+    let updatedLongURL = req.body.update;
+    urlDatabase[shortURL].url = updatedLongURL;
+    res.redirect(`/urls/${shortURL}`);
+  } else {
+    res.status(400).send('401 - Only the administrator can edit this page.');
+    return
+  }
 });
 
 // Deletes entry from database

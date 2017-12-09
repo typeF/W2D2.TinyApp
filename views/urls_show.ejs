@@ -1,23 +1,38 @@
 <!DOCTYPE html>
 <html lang='en'>
-<head>
-  <% include ../views/partials/_header %>
-</head>
+  <head>
+  <meta charset="utf-8">
+  <title>Usage Statistics</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <style>
+      body {
+      padding-top: 20px;
+      padding-bottom: 20px;
+      }
+      </style>
+  </head>
 
 <body>
-    <h2> Usage Statistics</h2>
-    <ul> <a href="/u/<%=shortURL %>"> <%= shortURL %></a> - <%= urls[shortURL].url %> </ul>
-    <form action="/urls/<%= shortURL%>/update?_method=PUT" method="POST" style="margin:10px;">
-      <input id="update" type="text" name="update" placeholder="<%= urls[shortURL].url %>" style="width: 300px">
-      <input type="submit" value="Update">
-    </form>
-    <ul></ul>
-    <td> Added: <%=urls[shortURL]["date"]%> • </td> <td>Views: <%=urls[shortURL]["visits"]%> • </td> <td>Unique visitors: <%=urls[shortURL]["uniqueCount"]%></td>
-
-    <ul></ul>
-
+  <div class="container">
+  <% include ../views/partials/_header %>
+      <div>
+        <h2><%= urls[shortURL].url %> ➥ <a href="/u/<%=shortURL %>">  <%= shortURL %></a> </h2>
+        <p><form action="/urls/<%= shortURL%>/update?_method=PUT" method="POST" style="margin:10px;">
+          <input id="update" type="text" name="update" placeholder="<%= urls[shortURL].url %>" style="width: 300px">
+          <input type="submit" value="Update">
+          </form>
+        </p>
+        <p>Added: <%=urls[shortURL]["date"]%>.    Views: <%=urls[shortURL]["visits"]%>    Unique visitors: <%=urls[shortURL]["uniqueCount"]%></p>
+        <div>
+          <a href="/urls/"> Home </a>
+        </div>
+        <hr>
+      </div>
     <% urls[shortURL].visitTag.forEach(stat => { %>
-      <li>Viewed on:  <%= stat %></li>
+    <p>Viewed on:  <%= stat %></p>
     <% }); %>
+  </div>
 </body>
 </html>
+
+

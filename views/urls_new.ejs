@@ -1,12 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head></head>
-  <body style="font-size:20px; padding:50px;">
-    <% include partials/_header %>
-    <form action="/urls" method="POST" style="margin:150px;">
-      <label for="longURL">Enter a URL:</label>
-      <input id="longURL" type="text" name="longURL" placeholder="http://" style="width: 300px">
-      <input type="submit" value="Submit">
-    </form>
+<html lang='en'>
+  <head>
+    <meta charset="utf-8">
+    <title>Usage Statistics</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <style>
+      body {
+        padding-top: 20px;
+        padding-bottom: 20px;
+        }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <% include ../views/partials/_header %>
+      <div>
+        <h2> Enter a new URL to enter</h2>
+        <p>
+          <form action="/urls" method="POST" style="margin:10px;">
+            <input id="longURL" type="text" name="longURL" placeholder="http://" style="width: 300px">
+            <input type="submit" value="Submit">
+          </form>
+        </p>
+        <hr>
+      </div>
+      <a href="/urls/"> Home </a>
+    </div>
   </body>
 </html>

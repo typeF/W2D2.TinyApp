@@ -1,31 +1,46 @@
 <!DOCTYPE html>
 <html lang='en'>
-<head>
-  <% include ../views/partials/_header %>
-</head>
-<body>
+  <head>
+    <meta charset="utf-8">
+    <title>TinyApp</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+      <style>
+        body {
+          padding-top: 20px;
+          padding-bottom: 20px;
+        }
 
-<h2> URL INDEX </h2>
-<% for(sites in urls){ %>
-<li> <%= sites %> =======> <%= urls[sites].url %>
+        .jumbotron {
+          margin-top: 10px;
+        }
+      </style>
+  </head>
 
-  <form method="POST" action="/urls/<%= sites %>/delete?_method=DELETE" id="del">
-  </form> <form method="GET" action="/urls/<%= sites %>/" id="update">
-  </form>
-  <button form="update">Edit/View Stats</button> <button form="del">DELETE</button> </li>
-
-  <p><td> Added: <%=urls[sites]["date"]%> </td> <td>Views: <%=urls[sites]["visits"]%></td> <td>Unique visitors: <%=urls[sites]["uniqueCount"]%></td>
-
-<% } %>
-
-<ul></ul>
-
-<a href="/urls/new"> Create a New Short Link </a>
-
-
-
-
-</body>
+  <body>
+    <div class="container">
+    <% include ../views/partials/_header %>
+      <div class="jumbotron">
+      <h1>URL Index</h1>
+      </div>
+        <div class="row">
+          <div class="col-lg-12">
+          <div class="list-group">
+            <% for(sites in urls){ %>
+              <a href="/urls/<%=sites%>" class="list-group-item">
+              <h4 class="list-group-item-heading"><%= urls[sites].url %> ➥ <%= sites %> </h4>
+              <p class="list-group-item-text">Added: <%=urls[sites]["date"]%>.    Views: <%=urls[sites]["visits"]%>    Unique visitors: <%=urls[sites]["uniqueCount"]%> </p>
+              <p>
+                <form method="POST" action="/urls/<%= sites %>/delete?_method=DELETE" id="del"></form>
+                <form method="GET" action="/urls/<%= sites %>/" id="update"></form>
+                <button form="update">Edit/View Stats</button> <button form="del">DELETE</button>
+              </p>
+              </a>
+            <% } %>
+          </div>
+        </div>
+      </div>
+      <a href="/urls/new"> Create a New Short Link </a>
+    </div>
+  </body>
 </html>
-
 

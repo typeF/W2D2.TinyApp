@@ -1,28 +1,38 @@
 <!DOCTYPE html>
 <html lang='en'>
-<head>
-<h1>
-  Login Page
+  <head>
+    <meta charset="utf-8">
+    <title>Log in</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <style>
+      body {
+        padding-top: 20px;
+        padding-bottom: 20px;
+        }
+    </style>
+  </head>
 
-    <form action="/login" method="POST">
-    <p>
-      <label for="email"></label>
-      <input type="email" placeholder="EMAIL" name="email">
-     </p>
-    <p>
-      <label for="password"></label>
-      <input type="password" placeholder="PASSWORD" name="password">
-    </p>
-      <button type="submit">SUBMIT</button>
-  </form>
-
-</h1>
-
-<h2> Or <a href="/register"> Register </a> </h2>
-
-</head>
-<body>
-
-
-</body>
+  <body>
+    <div class="container">
+      <% include ../views/partials/_header %>
+      <div>
+        <h1>Log in</h1>
+        <p>
+          <form action="/login" method="POST">
+        <p>
+          <label for="email"></label>
+          <input type="email" placeholder="EMAIL" name="email">
+        </p>
+        <p>
+          <label for="password"></label>
+          <input type="password" placeholder="PASSWORD" name="password">
+        </p>
+          <button type="submit">SUBMIT</button>
+        </p>
+        <hr>
+      </div>
+    </div>
+  </body>
 </html>
+
+
