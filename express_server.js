@@ -85,7 +85,7 @@ function generateRandomString(){
 // Creates customized user-specific URL database
 function urlsForUser(userID) {
   const userDB = {};
-  for (urls in urlDatabase) {
+  for (let urls in urlDatabase) {
     if (urlDatabase[urls].user === userID){
       userDB[urls] = urlDatabase[urls];
     }
@@ -97,6 +97,9 @@ function URLHandling (longURL){
   if (longURL.substring(0,7) === 'http://'){
     return longURL;
   }
+  else if (longURL.substring(0,8) === 'https://'){
+    return longURL;
+  }
   else if (longURL.substring(0,4) === 'www.'){
     return ("http://" + longURL);
   }
@@ -104,8 +107,6 @@ function URLHandling (longURL){
     return ('http://www.' + longURL);
   }
 }
-
-// ################ GET RESPONSES #####################################################################
 
 // ROOT page
 app.get("/", (req, res) => {
@@ -195,14 +196,12 @@ app.get("/register", (req, res) => {
     res.render('registration');
 });
 
-// ################ POST RESPONSES #####################################################
-
 app.post("/register", (req, res) => {
     let email = req.body.email;
     let password = req.body.password;
     let passwordHashed = bcrypt.hashSync(password, 10);
-    for (userID in users){
-      if (users[userID]["email"] === email){
+    for (let userID in users){
+      if (users[userID].email === email){
       res.status(400).send('Email already exists. Please enter new email');
       return
       }
@@ -281,3 +280,5 @@ app.post("/logout", (req, res) => {
 });
 
 app.listen(PORT);
+
+
